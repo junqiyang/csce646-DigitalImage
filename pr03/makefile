@@ -7,7 +7,7 @@
 
 CC		= g++
 LDFLAGS 	= -lglut -lGL -lm
-PROJECT		= pr02
+PROJECT		= pr03
 FILES		= pr01.cpp
 
 ${PROJECT}:${FILES}
