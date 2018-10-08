@@ -326,12 +326,6 @@ void replaceColor(string sourcefile, string replacefile)
 
 
 
-
-
-
-
-
-
 class Vector2f{
     public:    
     float x, y;
@@ -349,11 +343,6 @@ class Vector2f{
         return (Vector2f(x * f, y * f));
     }
 };
-
-
-
-
-
 
 class Point2f: public Vector2f{
     public:
@@ -386,20 +375,15 @@ class Point2f: public Vector2f{
 
 
 
-
-
-
-
-
 Point2f F(Point2f p0, Point2f p1, Vector2f v0, Vector2f v1, float t)
 {
     float h0 = 2.0*powf(t,3) - 3.0*powf(t,2) +1;
     float h1 = -2.0*powf(t,3) + 3.0*powf(t,2);
     float h2 = powf(t,3) - 2.0*powf(t,2) + t;
     float h3 = powf(t,3) - powf(t,2);
-    Point2f Ft;
-    Ft = p0*h0 + p1*h1 + v0*h2 + v1*h3;
-    return Ft;
+    Point2f CY;
+    CY = p0*h0 + p1*h1 + v0*h2 + v1*h3;
+    return CY;
 }
 
 
@@ -466,60 +450,17 @@ void create_curve(Point2f p[]){
     }
 }
 
-
-
-
 void curve(int mode){
     Point2f p[N+1];
 
     p[0] = Point2f(0, 0);
-    p[1] = Point2f(0.1, 0.2);
-    p[2] = Point2f(0.5, 0.8);
-    p[3] = Point2f(0.7, 0.7);
+    p[1] = Point2f(0.2, 0.7);
+    p[2] = Point2f(0.4, 0.3);
+    p[3] = Point2f(0.6, 0.9);
     p[4] = Point2f(1, 1); 
     create_curve(p);  
     getColor(mode);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class Point3f{
-    public:
-    float x, y, z;
-    Point3f() {}
-    Point3f( float _x, float _y, float _z ) { x=_x; y=_y; z=_z;}
-    Point3f operator+( const Point3f &pt ) const { return Point3f(x+pt.x, y+pt.y, z+pt.z); }
-    Point3f operator-( const Point3f &pt ) const { return Point3f(x-pt.x, y-pt.y, z-pt.z); }
-    float	Dot		 ( const Point3f &pt ) const { return x*pt.x + y*pt.y + z*pt.z; }	///< Dot product
-	float	operator%( const Point3f &pt ) const { return Dot(pt); }	
- };
- 
-
 
 // =============================================================================
 // main() Program Entry
@@ -531,7 +472,9 @@ int main(int argc, char *argv[])
   width = 600;
   height = 600;
   
-
+  int option;
+  cout<<"1.Curve-Red \n2.Curve-Blue\n3.Curve-Green\n4.Replace—Hue"<<endl;
+  cin>>option;
   // OpenGL Commands:
   // Once "glutMainLoop" is executed, the program loops indefinitely to all
   // glut functions.  
@@ -539,17 +482,38 @@ int main(int argc, char *argv[])
   glutInitWindowPosition(100, 100); // Where the window will display on-screen.
   glutInitWindowSize(width, height);
   glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
-  glutCreateWindow("Homework Zero");
+
   
-  int option;
-  cout<<"1.Curve-Red \n"
+  glutCreateWindow("Homework Zero");
+  switch(option){
+    case 1:
+        load("00.ppm");
+        init();
+        curve(1);
+        save("1.ppm");
+        break;
+    case 2:
+        load("00.ppm");
+        init();
+        curve(2);
+        save("2.ppm");
+        break;
+    case 3:
+        load("00.ppm");
+        init();
+        curve(3);
+        save("3.ppm");
+        break; 
+    case 4:
+        init();
+        replaceColor("00.ppm", "000.ppm");
+        save("6.ppm");
+        break;        
+  }
   
   
 //  replaceColor("shaded.ppm", "sp.ppm");
-  load("00.ppm");
-  init();
-  curve(1);
-  save("2.ppm");
+
   glutReshapeFunc(windowResize);
   glutDisplayFunc(windowDisplay);
   glutMouseFunc(processMouse);
