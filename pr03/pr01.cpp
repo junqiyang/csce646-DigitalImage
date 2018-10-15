@@ -42,14 +42,13 @@ using namespace std;
 // These variables will store the input ppm image's width, height, and color
 // =============================================================================
 int width, height, max_color, curveW, curveH, level;
-int cxLevel = 0;
 int CY[255];
 unsigned char *pixmap;
 unsigned char *pixrep;
 float I = 0, J = 0;
 int r = 0,g = 0,b=0;
 int neig = 4;
-int N = 4;
+int N = 5;
 
 
 
@@ -280,7 +279,7 @@ int i;
 			g = p;
 			b = v;
 			break;
-		default:		// case 5:
+		default:		
 			r = v;
 			g = p;
 			b = q;
@@ -326,25 +325,9 @@ void replaceColor(string sourcefile, string replacefile)
 
 
 
-class Vector2f{
-    public:    
-    float x, y;
-    
-    Vector2f() {}
-    Vector2f( float _x, float _y ) { x=_x; y=_y; }    
-    Vector2f operator+(const Vector2f &v) const  { return (Vector2f(x + v.x, y + v.y));    }
-    Vector2f operator-(const Vector2f &v) const  { return (Vector2f(x - v.x, y + v.y));    }
-    
-    
-    Vector2f operator*(float t) const  { return (Vector2f(x * t, y * t));} 
-    Vector2f operator /(float t) const
-    {
-        float f = 1.0F / t;
-        return (Vector2f(x * f, y * f));
-    }
-};
 
-class Point2f: public Vector2f{
+
+class Point2f{
     public:
     float x, y;
     Point2f() {}
@@ -353,21 +336,6 @@ class Point2f: public Vector2f{
     Point2f operator-( const Point2f &pt ) const { return Point2f(x-pt.x, y-pt.y); }
     Point2f operator*(float t) const  { return (Point2f(x * t, y * t)); }
     Point2f operator/(float t) const { float f = 1.0F / t; return (Point2f(x * f, y * f));}
-    
-    Point2f& operator =(const Vector2f& v)
-    {
-        x = v.x;
-        y = v.y;
-        return (*this);
-    }
-    
-    Point2f operator +(const Vector2f& v) const
-    {
-        return (Point2f(x + v.x, y + v.y));
-    }
-    
-    
-    
     float Dot	   ( const Point2f &pt ) const { return x*pt.x + y*pt.y; }	///< Dot product
 	float operator%( const Point2f &pt ) const { return Dot(pt); }
     
@@ -375,13 +343,13 @@ class Point2f: public Vector2f{
 
 
 
-Point2f F(Point2f p0, Point2f p1, Vector2f v0, Vector2f v1, float t)
+float F(float p0, float p1, float v0, float v1, float t)
 {
     float h0 = 2.0*powf(t,3) - 3.0*powf(t,2) +1;
     float h1 = -2.0*powf(t,3) + 3.0*powf(t,2);
     float h2 = powf(t,3) - 2.0*powf(t,2) + t;
     float h3 = powf(t,3) - powf(t,2);
-    Point2f CY;
+    float CY;
     CY = p0*h0 + p1*h1 + v0*h2 + v1*h3;
     return CY;
 }
@@ -407,59 +375,39 @@ void getColor(int mode){
     }
 }
 
-void colormap(Point2f p0, Point2f p1){
-    int CX0, CX1;
-    float cx0, cx1, cy0, cy1;
-    p0 = p0;
-    p1 = p1;   
-    
-    cx0 = p0.x;
-    cx1 = p1.x;
-    cy0 = p0.y;
-    cy1 = p1.y;   
-    
-    CX0 = (int)(cx0 + 0.5);
-    CX1 = (int)(cx1 + 0.5); 
-
-    for (int CX = CX0; CX < CX1; CX++){
-        float t = CX;
-        int CYtemp = (int)(((1-t) *cy0 + t * cy1) + 0.5);
-        CY[cxLevel] = CYtemp;
-        cxLevel++;
-    }    
-}
-
 
 void create_curve(Point2f p[]){
-    Vector2f v[N+1];
-    Point2f P0, P1;
-    v[0] = p[1] - p[0];
-    for (int i = 1; i<N; i++) {
-        v[i] = (p[i+1] - p[i-1])/2.0;
+    int Cx[N];
+    int Cy[N];
+    for(int i = 0;i<N;i++){
+        Cx[i] = (int)(255*p[i].x+0.5);
+        Cy[i] = (int)(255*p[i].y+0.5);        
     }
-    v[N] = p[N] - p[N-1];
-    P0 = F(p[0], p[1], v[0], v[1], 0);
-    for (int i = 0; i< N; i++) {
-        for( int T=1; T<100; T++)
-        {
-            float t = (float)T/(100 - 1);
-            P1 = F(p[i], p[i+1], v[i], v[i+1],t);
-            colormap(P0, P1);
-            P0 = P1;
-        }
+    
+    int i = 0, j,k;
+    for(int CX = 0;CX<256;CX++){
+        if(CX > Cx[i+1]) i++;
+        j = (i-1); if(j<0) j = 0;
+        k = (i+2); if(k > N-1) k = N-1;
+        float t = (CX - Cx[i])/(Cx[i+1]-Cx[i]);
+        float a = Cy[i];
+        float b = Cy[i+1];
+        float c = (Cy[i+1] - Cy[j]) * (p[i+1].x - p[j].x);
+        float d = (Cy[k] - Cy[i]) * (p[k].x - p[i].x);
+        CY[CX] = F(a,b,c,d,t);
     }
 }
 
 void curve(int mode){
-    Point2f p[N+1];
-
-    p[0] = Point2f(0, 0);
-    p[1] = Point2f(0.2, 0.7);
-    p[2] = Point2f(0.4, 0.3);
-    p[3] = Point2f(0.6, 0.9);
-    p[4] = Point2f(1, 1); 
-    create_curve(p);  
-    getColor(mode);
+        N = 5;
+        Point2f p[N];
+        p[0] = Point2f(0, 0);
+        p[1] = Point2f(0.3, 0.6);
+        p[2] = Point2f(0.5, 0.3);
+        p[3] = Point2f(0.7, 0.5);
+        p[4] = Point2f(1, 1);              
+        create_curve(p);  
+        getColor(mode);       
 }
 
 // =============================================================================
@@ -473,47 +421,54 @@ int main(int argc, char *argv[])
   height = 600;
   
   int option;
-  cout<<"1.Curve-Red \n2.Curve-Blue\n3.Curve-Green\n4.Replace—Hue"<<endl;
+  cout<<"0.Curve-AllColor\n1.Curve-Red \n2.Curve-Green\n3.Curve-Blue\n4.Replace—Hue"<<endl;
   cin>>option;
-  // OpenGL Commands:
-  // Once "glutMainLoop" is executed, the program loops indefinitely to all
-  // glut functions.  
+  string file;  
+  if(option == 4){
+        cout<<"Name of the replace Color Hue Pic: (PPM only)"<<endl;
+        cin>>file;            
+  }
+
+
   glutInit(&argc, argv);
   glutInitWindowPosition(100, 100); // Where the window will display on-screen.
   glutInitWindowSize(width, height);
-  glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
-
-  
+  glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);  
   glutCreateWindow("Homework Zero");
+  
   switch(option){
-    case 1:
-        load("00.ppm");
+    case 0:
+        load("00.ppm");     
         init();
-        curve(1);
+        curve(0);      
+        save("0.ppm");
+        break;    
+    case 1:
+        load("00.ppm");     
+        init();
+        curve(1);      
         save("1.ppm");
         break;
     case 2:
         load("00.ppm");
+     
         init();
-        curve(2);
+        curve(2);   
         save("2.ppm");
         break;
     case 3:
         load("00.ppm");
+   
         init();
-        curve(3);
+        curve(3);     
         save("3.ppm");
         break; 
     case 4:
-        init();
-        replaceColor("00.ppm", "000.ppm");
+        init();        
+        replaceColor("00.ppm", file);
         save("6.ppm");
         break;        
-  }
-  
-  
-//  replaceColor("shaded.ppm", "sp.ppm");
-
+  }  
   glutReshapeFunc(windowResize);
   glutDisplayFunc(windowDisplay);
   glutMouseFunc(processMouse);
