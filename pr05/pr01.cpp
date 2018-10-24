@@ -424,15 +424,7 @@ void applyfilter(int option){
             applyDilationFilter(w);
             save("Dilation.ppm");
             break;
-        
-        
     }
-    
-    
-    
-    
-    
-   
 }
 
 
