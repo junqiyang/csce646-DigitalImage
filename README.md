@@ -1,7 +1,7 @@
 # Digital Image Course Project
 This is the class repo for CSCE646 Digital Image I am currently taking in Fall 2018. Click the link below to see some cool image demostration.
 
-###Demos:
+### Demos:
 
 [Project 1: Read/Write Image](http://people.tamu.edu/~junqiyang/csce646/pr01/index.html)
 
