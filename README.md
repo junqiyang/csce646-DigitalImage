@@ -15,4 +15,4 @@ This is the class repo for CSCE646 Digital Image I am currently taking in Fall 2
 
 [Project 6: Linear Transformation](http://people.tamu.edu/~junqiyang/csce646/pr06/index.html)
 
-[Project 7: Bilinear Transformation and Inverse Function](http://people.tamu.edu/~junqiyang/csce646/pr06/index.html)
+[Project 7: Bilinear Transformation and Inverse Function](http://people.tamu.edu/~junqiyang/csce646/pr07/index.html)
